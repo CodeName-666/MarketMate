@@ -26,7 +26,12 @@ export default function RegisterPage() {
         market: market as string,
         role: role as string
     });
-    router.push(`/dashboard?${queryParams.toString()}`);
+    
+    if (role === 'admin') {
+      router.push(`/dashboard/admin?${queryParams.toString()}`);
+    } else {
+      router.push(`/dashboard?${queryParams.toString()}`);
+    }
   };
 
   return (
@@ -38,7 +43,7 @@ export default function RegisterPage() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle>Create an Account</CardTitle>
-            <CardDescription>Join a market as a seller or a helper</CardDescription>
+            <CardDescription>Join a market as a seller, helper, or admin</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -56,7 +61,7 @@ export default function RegisterPage() {
               </div>
                <div className="space-y-2">
                 <Label>Register as a</Label>
-                <RadioGroup name="role" defaultValue="seller" className="flex gap-4">
+                <RadioGroup name="role" defaultValue="seller" className="grid grid-cols-3 gap-4">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="seller" id="role-seller" />
                     <Label htmlFor="role-seller">Seller</Label>
@@ -64,6 +69,10 @@ export default function RegisterPage() {
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="helper" id="role-helper" />
                     <Label htmlFor="role-helper">Helper</Label>
+                  </div>
+                   <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="admin" id="role-admin" />
+                    <Label htmlFor="role-admin">Admin</Label>
                   </div>
                 </RadioGroup>
               </div>

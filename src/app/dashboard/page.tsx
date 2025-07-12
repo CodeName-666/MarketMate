@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter, useSearchParams } from "next/navigation";
-import { BarChart, ListOrdered, History, PlusCircle, Printer, Edit, Trash2, Gift } from 'lucide-react';
+import { BarChart, ListOrdered, History, PlusCircle, Printer, Edit, Trash2, Gift, ShieldCheck } from 'lucide-react';
 
 interface Article {
   id: number;
@@ -95,11 +95,18 @@ export default function DashboardPage() {
   };
   
   const isHelper = role.toLowerCase() === 'helper';
+  const isSeller = role.toLowerCase() === 'seller';
+  const isAdmin = role.toLowerCase() === 'admin';
+
+  let welcomeMessage = 'Seller Dashboard';
+  if(isHelper) welcomeMessage = 'Helper Dashboard';
+  if(isAdmin) welcomeMessage = 'Admin Overview';
+
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold font-headline">{isHelper ? 'Helper' : 'Seller'} Dashboard</h1>
+        <h1 className="text-3xl font-bold font-headline">{welcomeMessage}</h1>
         <p className="text-muted-foreground">Welcome to the <span className="font-semibold text-primary">{market}</span>!</p>
       </div>
 
@@ -113,15 +120,26 @@ export default function DashboardPage() {
         </Alert>
       )}
 
+      {isAdmin && (
+         <Alert className="bg-blue-100 border-blue-200 text-blue-800 dark:bg-blue-900/30 dark:border-blue-700/50 dark:text-blue-300">
+            <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <AlertTitle>Admin Access</AlertTitle>
+            <AlertDescription>
+                You are logged in as an Administrator. Use the Admin panel in the sidebar to manage markets.
+            </AlertDescription>
+        </Alert>
+      )}
+
+
       <Tabs defaultValue="overview">
         <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3">
           <TabsTrigger value="overview"><BarChart className="mr-2 h-4 w-4" />Overview</TabsTrigger>
-          {!isHelper && <TabsTrigger value="articles"><ListOrdered className="mr-2 h-4 w-4" />My Articles</TabsTrigger>}
+          {isSeller && <TabsTrigger value="articles"><ListOrdered className="mr-2 h-4 w-4" />My Articles</TabsTrigger>}
           <TabsTrigger value="history"><History className="mr-2 h-4 w-4" />Purchase History</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {!isHelper &&
+            {isSeller &&
              <>
                 <Card>
                 <CardHeader>
@@ -157,7 +175,7 @@ export default function DashboardPage() {
             }
           </div>
         </TabsContent>
-        {!isHelper && <TabsContent value="articles">
+        {isSeller && <TabsContent value="articles">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
@@ -259,7 +277,7 @@ export default function DashboardPage() {
                             </TableRow>
                         </TableBody>
                     </Table>
-                     {!isHelper && 
+                     {isSeller && 
                         <div className="mt-6 flex justify-start">
                             <Button variant="secondary">Purchase New Number</Button>
                         </div>

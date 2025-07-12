@@ -29,12 +29,25 @@ import {
   SidebarTrigger
 } from '@/components/ui/sidebar';
 import { Cog, LayoutDashboard, LogOut, User } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import Logo from '@/components/logo';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const role = searchParams.get('role');
+  const market = searchParams.get('market');
+
   const isActive = (path: string) => pathname === path;
+  const isAdmin = role === 'admin';
+
+  // Helper to preserve query params on navigation
+  const linkWithParams = (path: string) => {
+    const params = new URLSearchParams();
+    if (market) params.set('market', market);
+    if (role) params.set('role', role);
+    return `${path}?${params.toString()}`;
+  }
 
   return (
     <SidebarProvider>
@@ -51,21 +64,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <Link href="/dashboard" passHref>
+              <Link href={linkWithParams("/dashboard")} passHref>
                 <SidebarMenuButton tooltip="Dashboard" isActive={isActive('/dashboard')}>
                   <LayoutDashboard />
                   <span>Dashboard</span>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-               <Link href="/dashboard/admin" passHref>
-                <SidebarMenuButton tooltip="Admin Settings" isActive={isActive('/dashboard/admin')}>
-                  <Cog />
-                  <span>Admin</span>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
+            {isAdmin && (
+              <SidebarMenuItem>
+                <Link href={linkWithParams("/dashboard/admin")} passHref>
+                  <SidebarMenuButton tooltip="Admin Settings" isActive={isActive('/dashboard/admin')}>
+                    <Cog />
+                    <span>Admin</span>
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+            )}
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
