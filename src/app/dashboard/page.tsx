@@ -16,11 +16,12 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
-import { BarChart, ListOrdered, History, PlusCircle, Printer, Edit, Trash2 } from 'lucide-react';
+import { useRouter, useSearchParams } from "next/navigation";
+import { BarChart, ListOrdered, History, PlusCircle, Printer, Edit, Trash2, Gift } from 'lucide-react';
 
 interface Article {
   id: number;
@@ -42,6 +43,9 @@ export default function DashboardPage() {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const role = searchParams.get('role') || 'seller';
+  const market = searchParams.get('market') || 'Summer Flea Market';
 
   const handleAddArticle = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -89,43 +93,71 @@ export default function DashboardPage() {
       });
     }
   };
+  
+  const isHelper = role.toLowerCase() === 'helper';
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold font-headline">Seller Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back, here's your sales overview.</p>
+        <h1 className="text-3xl font-bold font-headline">{isHelper ? 'Helper' : 'Seller'} Dashboard</h1>
+        <p className="text-muted-foreground">Welcome to the <span className="font-semibold text-primary">{market}</span>!</p>
       </div>
+
+       {isHelper && (
+        <Alert className="bg-accent border-accent-foreground/20">
+            <Gift className="h-4 w-4" />
+            <AlertTitle>Helper Benefits</AlertTitle>
+            <AlertDescription>
+            Thank you for helping! Enjoy a 15% discount on all purchases and a free coffee from the main stall.
+            </AlertDescription>
+        </Alert>
+      )}
+
       <Tabs defaultValue="overview">
         <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3">
           <TabsTrigger value="overview"><BarChart className="mr-2 h-4 w-4" />Overview</TabsTrigger>
-          <TabsTrigger value="articles"><ListOrdered className="mr-2 h-4 w-4" />My Articles</TabsTrigger>
+          {!isHelper && <TabsTrigger value="articles"><ListOrdered className="mr-2 h-4 w-4" />My Articles</TabsTrigger>}
           <TabsTrigger value="history"><History className="mr-2 h-4 w-4" />Purchase History</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Seller Number</CardTitle>
-                <CardDescription>This number identifies you at the market.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-4xl font-bold text-primary">#{SELLER_NUMBER}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Article Limit</CardTitle>
-                <CardDescription>You can list up to {ARTICLE_LIMIT} items.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-2xl font-bold">{articles.length} / {ARTICLE_LIMIT} items listed</p>
-                <Progress value={(articles.length / ARTICLE_LIMIT) * 100} />
-              </CardContent>
-            </Card>
+            {!isHelper &&
+             <>
+                <Card>
+                <CardHeader>
+                    <CardTitle>Your Seller Number</CardTitle>
+                    <CardDescription>This number identifies you at the market.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-4xl font-bold text-primary">#{SELLER_NUMBER}</p>
+                </CardContent>
+                </Card>
+                <Card>
+                <CardHeader>
+                    <CardTitle>Article Limit</CardTitle>
+                    <CardDescription>You can list up to {ARTICLE_LIMIT} items.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                    <p className="text-2xl font-bold">{articles.length} / {ARTICLE_LIMIT} items listed</p>
+                    <Progress value={(articles.length / ARTICLE_LIMIT) * 100} />
+                </CardContent>
+                </Card>
+             </>
+            }
+            {isHelper && 
+                <Card className="col-span-1 md:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Your Role: Helper</CardTitle>
+                        <CardDescription>Your tasks include setup, teardown, and monitoring during the market.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p>Thank you for your contribution to making this market a success!</p>
+                    </CardContent>
+                </Card>
+            }
           </div>
         </TabsContent>
-        <TabsContent value="articles">
+        {!isHelper && <TabsContent value="articles">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
@@ -201,7 +233,7 @@ export default function DashboardPage() {
               </Table>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent>}
         <TabsContent value="history">
             <Card>
                 <CardHeader>
@@ -213,7 +245,7 @@ export default function DashboardPage() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Order ID</TableHead>
-                                <TableHead>Seller Number</TableHead>
+                                <TableHead>Item</TableHead>
                                 <TableHead>Date</TableHead>
                                 <TableHead className="text-right">Amount</TableHead>
                             </TableRow>
@@ -221,15 +253,17 @@ export default function DashboardPage() {
                         <TableBody>
                             <TableRow>
                                 <TableCell>ORD-2024-001</TableCell>
-                                <TableCell>#{SELLER_NUMBER}</TableCell>
+                                <TableCell>Seller Number #{SELLER_NUMBER}</TableCell>
                                 <TableCell>{new Date().toLocaleDateString()}</TableCell>
                                 <TableCell className="text-right">€10.00</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
-                    <div className="mt-6 flex justify-start">
-                        <Button variant="secondary">Purchase New Number</Button>
-                    </div>
+                     {!isHelper && 
+                        <div className="mt-6 flex justify-start">
+                            <Button variant="secondary">Purchase New Number</Button>
+                        </div>
+                     }
                 </CardContent>
             </Card>
         </TabsContent>

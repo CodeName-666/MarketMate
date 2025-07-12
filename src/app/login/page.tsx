@@ -7,15 +7,27 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/logo";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function LoginPage() {
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const market = formData.get('market');
+    const role = formData.get('role');
+    
     // Here you would typically handle authentication
-    console.log("Login submitted");
-    router.push("/dashboard");
+    console.log("Login submitted for market:", market, "with role:", role);
+    
+    const queryParams = new URLSearchParams({
+        market: market as string,
+        role: role as string
+    });
+    
+    router.push(`/dashboard?${queryParams.toString()}`);
   };
 
   return (
@@ -27,10 +39,35 @@ export default function LoginPage() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle>Welcome Back!</CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
+            <CardDescription>Select your market and role to log in</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+               <div className="space-y-2">
+                <Label htmlFor="market">Market</Label>
+                 <Select name="market" required defaultValue="summer-flea-market">
+                    <SelectTrigger id="market">
+                        <SelectValue placeholder="Select a market" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="summer-flea-market">Summer Flea Market</SelectItem>
+                        <SelectItem value="winter-wonderland-market">Winter Wonderland Market</SelectItem>
+                    </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Role</Label>
+                <RadioGroup name="role" defaultValue="seller" className="flex gap-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="seller" id="role-seller" />
+                    <Label htmlFor="role-seller">Seller</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="helper" id="role-helper" />
+                    <Label htmlFor="role-helper">Helper</Label>
+                  </div>
+                </RadioGroup>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" placeholder="john.doe@example.com" required />

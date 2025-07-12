@@ -6,7 +6,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Download, FileCog } from "lucide-react";
+import { Download, FileCog, Store, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
+
+const initialMarkets = [
+    { id: 1, name: 'Summer Flea Market', date: '2024-08-15', status: 'Active' },
+    { id: 2, name: 'Winter Wonderland Market', date: '2024-12-05', status: 'Planning' },
+];
 
 export default function AdminPage() {
   const { toast } = useToast();
@@ -55,17 +71,88 @@ export default function AdminPage() {
         <p className="text-muted-foreground">Manage application-wide settings and data.</p>
       </div>
 
-      <Tabs defaultValue="settings">
-        <TabsList>
+      <Tabs defaultValue="markets">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="markets"><Store className="mr-2 h-4 w-4" />Market Management</TabsTrigger>
           <TabsTrigger value="settings">
             <FileCog className="mr-2 h-4 w-4" />
-            Settings
+            Global Settings
           </TabsTrigger>
           <TabsTrigger value="export">
             <Download className="mr-2 h-4 w-4" />
             Data Export
           </TabsTrigger>
         </TabsList>
+        <TabsContent value="markets">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Market Management</CardTitle>
+                    <CardDescription>
+                        Create, configure, and manage all your markets from one place.
+                    </CardDescription>
+                </div>
+                 <Dialog>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Create Market
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create a New Market</DialogTitle>
+                        <DialogDescription>
+                          Enter the details for the new market event.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form id="create-market-form" className="space-y-4">
+                        <div>
+                          <Label htmlFor="marketName">Market Name</Label>
+                          <Input id="marketName" name="marketName" placeholder="e.g., Spring Community Fair" required />
+                        </div>
+                        <div>
+                          <Label htmlFor="marketDate">Market Date</Label>
+                          <Input id="marketDate" name="marketDate" type="date" required />
+                        </div>
+                      </form>
+                       <DialogFooter>
+                        <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                        <Button type="submit" form="create-market-form">Create Market</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Market Name</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {initialMarkets.map((market) => (
+                            <TableRow key={market.id}>
+                                <TableCell className="font-medium">{market.name}</TableCell>
+                                <TableCell>{market.date}</TableCell>
+                                <TableCell>{market.status}</TableCell>
+                                <TableCell className="text-right">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
         <TabsContent value="settings">
           <Card>
             <CardHeader>
