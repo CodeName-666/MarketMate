@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -17,14 +18,17 @@ export default function LoginPage() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const market = formData.get('market');
-    const role = formData.get('role');
+    const email = formData.get('email') as string;
     
-    // Here you would typically handle authentication
-    console.log("Login submitted for market:", market, "with role:", role);
+    // Here you would typically handle authentication and retrieve the user's role
+    console.log("Login submitted for market:", market, "with email:", email);
     
+    // Mock role determination based on email for demonstration
+    const role = email.toLowerCase() === 'admin@marketmate.com' ? 'admin' : 'seller';
+
     const queryParams = new URLSearchParams({
         market: market as string,
-        role: role as string
+        role: role,
     });
     
     if (role === 'admin') {
@@ -43,7 +47,7 @@ export default function LoginPage() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle>Welcome Back!</CardTitle>
-            <CardDescription>Select your market and role to log in</CardDescription>
+            <CardDescription>Select your market to log in</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -60,25 +64,9 @@ export default function LoginPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Role</Label>
-                <RadioGroup name="role" defaultValue="seller" className="grid grid-cols-3 gap-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="seller" id="role-seller" />
-                    <Label htmlFor="role-seller">Seller</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="helper" id="role-helper" />
-                    <Label htmlFor="role-helper">Helper</Label>
-                  </div>
-                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="admin" id="role-admin" />
-                    <Label htmlFor="role-admin">Admin</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="john.doe@example.com" required />
+                <Input id="email" name="email" type="email" placeholder="john.doe@example.com" required />
+                <p className="text-xs text-muted-foreground">Hint: Use `admin@marketmate.com` to log in as an administrator.</p>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -87,7 +75,7 @@ export default function LoginPage() {
                     Forgot password?
                   </Link>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" type="password" required defaultValue="password" />
               </div>
               <Button type="submit" className="w-full">
                 Login
