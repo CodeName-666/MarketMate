@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -16,21 +17,23 @@ export default function RegisterPage() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const organization = formData.get('organization');
     const market = formData.get('market');
     const role = formData.get('role');
 
     // Here you would typically handle registration
-    console.log("Registration submitted for market:", market, "as role:", role);
+    console.log("Registration submitted for org:", organization, "market:", market, "as role:", role);
     
     const queryParams = new URLSearchParams({
+        org: organization as string,
         market: market as string,
         role: role as string
     });
     
-    if (role === 'admin') {
-      router.push(`/dashboard/admin?${queryParams.toString()}`);
+    if (role === 'admin' && organization === 'new-org') {
+       router.push(`/dashboard/admin?${queryParams.toString()}`);
     } else {
-      router.push(`/dashboard?${queryParams.toString()}`);
+       router.push(`/dashboard?${queryParams.toString()}`);
     }
   };
 
@@ -43,10 +46,23 @@ export default function RegisterPage() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle>Create an Account</CardTitle>
-            <CardDescription>Join a market as a seller, helper, or admin</CardDescription>
+            <CardDescription>Join an organization and a market</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+               <div className="space-y-2">
+                <Label htmlFor="organization">Organization</Label>
+                 <Select name="organization" required defaultValue="flohmarkt-verein-berlin">
+                    <SelectTrigger id="organization">
+                        <SelectValue placeholder="Select an organization" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="flohmarkt-verein-berlin">Flohmarkt-Verein Berlin</SelectItem>
+                        <SelectItem value="stadt-hamburg-events">Stadt Hamburg Events</SelectItem>
+                        <SelectItem value="new-org">Create New Organization</SelectItem>
+                    </SelectContent>
+                </Select>
+              </div>
                <div className="space-y-2">
                 <Label htmlFor="market">Market</Label>
                  <Select name="market" required>
@@ -75,6 +91,7 @@ export default function RegisterPage() {
                     <Label htmlFor="role-admin">Admin</Label>
                   </div>
                 </RadioGroup>
+                 <p className="text-xs text-muted-foreground">Admins can only be created for a new organization.</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>

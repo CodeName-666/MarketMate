@@ -17,16 +17,19 @@ export default function LoginPage() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const organization = formData.get('organization');
     const market = formData.get('market');
     const email = formData.get('email') as string;
     
     // Here you would typically handle authentication and retrieve the user's role
-    console.log("Login submitted for market:", market, "with email:", email);
+    console.log("Login submitted for org:", organization, "market:", market, "with email:", email);
     
     // Mock role determination based on email for demonstration
-    const role = email.toLowerCase() === 'admin@marketmate.com' ? 'admin' : 'seller';
+    const role = email.toLowerCase().includes('admin') ? 'admin' : 
+                 email.toLowerCase().includes('helper') ? 'helper' : 'seller';
 
     const queryParams = new URLSearchParams({
+        org: organization as string,
         market: market as string,
         role: role,
     });
@@ -47,10 +50,22 @@ export default function LoginPage() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle>Welcome Back!</CardTitle>
-            <CardDescription>Select your market to log in</CardDescription>
+            <CardDescription>Select your organization and market to log in</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="organization">Organization</Label>
+                 <Select name="organization" required defaultValue="flohmarkt-verein-berlin">
+                    <SelectTrigger id="organization">
+                        <SelectValue placeholder="Select an organization" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="flohmarkt-verein-berlin">Flohmarkt-Verein Berlin</SelectItem>
+                        <SelectItem value="stadt-hamburg-events">Stadt Hamburg Events</SelectItem>
+                    </SelectContent>
+                </Select>
+              </div>
                <div className="space-y-2">
                 <Label htmlFor="market">Market</Label>
                  <Select name="market" required defaultValue="summer-flea-market">
@@ -66,7 +81,7 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" name="email" type="email" placeholder="john.doe@example.com" required />
-                <p className="text-xs text-muted-foreground">Hint: Use `admin@marketmate.com` to log in as an administrator.</p>
+                <p className="text-xs text-muted-foreground">Hint: Use `admin@marketmate.com` to log in as admin, or `helper@marketmate.com` for helper.</p>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">

@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from 'react';
@@ -46,6 +47,10 @@ export default function DashboardPage() {
   const searchParams = useSearchParams();
   const role = searchParams.get('role') || 'seller';
   const market = searchParams.get('market') || 'Summer Flea Market';
+  const org = searchParams.get('org') || 'Flohmarkt-Verein Berlin';
+
+  // Quick function to format names
+  const formatName = (name: string) => name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   const handleAddArticle = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -107,7 +112,10 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold font-headline">{welcomeMessage}</h1>
-        <p className="text-muted-foreground">Welcome to the <span className="font-semibold text-primary">{market}</span>!</p>
+        <p className="text-muted-foreground">
+            Organization: <span className="font-semibold text-primary">{formatName(org)}</span> / 
+            Market: <span className="font-semibold text-primary">{formatName(market)}</span>
+        </p>
       </div>
 
        {isHelper && (
@@ -125,7 +133,7 @@ export default function DashboardPage() {
             <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             <AlertTitle>Admin Access</AlertTitle>
             <AlertDescription>
-                You are logged in as an Administrator. Use the Admin panel in the sidebar to manage markets.
+                You are logged in as an Administrator. Use the Admin panel in the sidebar to manage your organization's markets.
             </AlertDescription>
         </Alert>
       )}

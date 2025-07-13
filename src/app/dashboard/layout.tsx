@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from 'react';
@@ -37,6 +38,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const searchParams = useSearchParams();
   const role = searchParams.get('role');
   const market = searchParams.get('market');
+  const org = searchParams.get('org');
 
   const isActive = (path: string) => pathname === path;
   const isAdmin = role === 'admin';
@@ -44,6 +46,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Helper to preserve query params on navigation
   const linkWithParams = (path: string) => {
     const params = new URLSearchParams();
+    if (org) params.set('org', org);
     if (market) params.set('market', market);
     if (role) params.set('role', role);
     return `${path}?${params.toString()}`;

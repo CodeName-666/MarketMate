@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Download, FileCog, Store, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { Download, FileCog, Store, PlusCircle, Edit, Trash2, Building } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Dialog,
@@ -18,6 +19,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+import { useSearchParams } from "next/navigation";
 
 const initialMarkets = [
     { id: 1, name: 'Summer Flea Market', date: '2024-08-15', status: 'Active' },
@@ -26,6 +28,11 @@ const initialMarkets = [
 
 export default function AdminPage() {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const org = searchParams.get('org') || 'My Organization';
+
+  // Quick function to format names
+  const formatName = (name: string) => name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   const handleSaveSettings = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -47,7 +54,7 @@ export default function AdminPage() {
     ];
     
     const headers = "sellerId,articleId,description,price";
-    const csvRows = articles.map(row => `${row.sellerId},${row.articleId},"${row.description}",${row.price}`);
+    const csvRows = articles.map(row => `${row.sellerId},"${row.description}",${row.price}`);
     const csvContent = "data:text/csv;charset=utf-8," + [headers, ...csvRows].join("\n");
     
     const encodedUri = encodeURI(csvContent);
@@ -68,11 +75,14 @@ export default function AdminPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold font-headline">Admin Control Panel</h1>
-        <p className="text-muted-foreground">Manage application-wide settings and data.</p>
+        <p className="text-muted-foreground">
+            Managing <span className="font-semibold text-primary">{formatName(org)}</span>
+        </p>
       </div>
 
       <Tabs defaultValue="markets">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="org-settings"><Building className="mr-2 h-4 w-4" />Organization</TabsTrigger>
           <TabsTrigger value="markets"><Store className="mr-2 h-4 w-4" />Market Management</TabsTrigger>
           <TabsTrigger value="settings">
             <FileCog className="mr-2 h-4 w-4" />
@@ -83,6 +93,25 @@ export default function AdminPage() {
             Data Export
           </TabsTrigger>
         </TabsList>
+         <TabsContent value="org-settings">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Organization Settings</CardTitle>
+                    <CardDescription>Manage your organization's details and subscription plan.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="orgName">Organization Name</Label>
+                        <Input id="orgName" defaultValue={formatName(org)} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="orgContact">Contact Email</Label>
+                        <Input id="orgContact" type="email" defaultValue="contact@example.com" />
+                    </div>
+                     <Button>Save Organization Details</Button>
+                </CardContent>
+            </Card>
+        </TabsContent>
         <TabsContent value="markets">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
