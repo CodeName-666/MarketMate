@@ -9,20 +9,19 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/logo";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function LoginPage() {
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleParticipantSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const organization = formData.get('organization');
     const market = formData.get('market');
     const email = formData.get('email') as string;
     
-    // Here you would typically handle authentication and retrieve the user's role
-    console.log("Login submitted for org:", organization, "market:", market, "with email:", email);
+    console.log("Participant login submitted for org:", organization, "market:", market, "with email:", email);
     
     // Mock role determination based on email for demonstration
     const role = email.toLowerCase().includes('admin') ? 'admin' : 
@@ -34,12 +33,28 @@ export default function LoginPage() {
         role: role,
     });
     
-    if (role === 'admin') {
-      router.push(`/dashboard/admin?${queryParams.toString()}`);
-    } else {
-      router.push(`/dashboard?${queryParams.toString()}`);
-    }
+    // Admins logging into a specific market are still directed to the market-specific admin view
+    router.push(`/dashboard?${queryParams.toString()}`);
   };
+
+  const handleOrganizationSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+     
+    // For org login, we assume they are an admin of that org.
+    // The org context would be derived from the user's credentials in a real app.
+    const organization = email.toLowerCase().includes('berlin') ? 'flohmarkt-verein-berlin' : 'stadt-hamburg-events';
+    
+    console.log("Organization admin login submitted for email:", email);
+
+    const queryParams = new URLSearchParams({
+        org: organization,
+        role: 'admin',
+    });
+
+    router.push(`/dashboard/admin?${queryParams.toString()}`);
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -50,52 +65,81 @@ export default function LoginPage() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle>Welcome Back!</CardTitle>
-            <CardDescription>Select your organization and market to log in</CardDescription>
+            <CardDescription>Log in to manage your markets or participation.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="organization">Organization</Label>
-                 <Select name="organization" required defaultValue="flohmarkt-verein-berlin">
-                    <SelectTrigger id="organization">
-                        <SelectValue placeholder="Select an organization" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="flohmarkt-verein-berlin">Flohmarkt-Verein Berlin</SelectItem>
-                        <SelectItem value="stadt-hamburg-events">Stadt Hamburg Events</SelectItem>
-                    </SelectContent>
-                </Select>
-              </div>
-               <div className="space-y-2">
-                <Label htmlFor="market">Market</Label>
-                 <Select name="market" required defaultValue="summer-flea-market">
-                    <SelectTrigger id="market">
-                        <SelectValue placeholder="Select a market" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="summer-flea-market">Summer Flea Market</SelectItem>
-                        <SelectItem value="winter-wonderland-market">Winter Wonderland Market</SelectItem>
-                    </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" placeholder="john.doe@example.com" required />
-                <p className="text-xs text-muted-foreground">Hint: Use `admin@marketmate.com` to log in as admin, or `helper@marketmate.com` for helper.</p>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Link href="#" className="text-sm font-medium text-primary hover:underline">
-                    Forgot password?
-                  </Link>
-                </div>
-                <Input id="password" type="password" required defaultValue="password" />
-              </div>
-              <Button type="submit" className="w-full">
-                Login
-              </Button>
-            </form>
+            <Tabs defaultValue="participant">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="participant">Participant Login</TabsTrigger>
+                <TabsTrigger value="organization">Organization Login</TabsTrigger>
+              </TabsList>
+              <TabsContent value="participant">
+                 <form onSubmit={handleParticipantSubmit} className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="organization">Organization</Label>
+                    <Select name="organization" required defaultValue="flohmarkt-verein-berlin">
+                        <SelectTrigger id="organization">
+                            <SelectValue placeholder="Select an organization" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="flohmarkt-verein-berlin">Flohmarkt-Verein Berlin</SelectItem>
+                            <SelectItem value="stadt-hamburg-events">Stadt Hamburg Events</SelectItem>
+                        </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="market">Market</Label>
+                    <Select name="market" required defaultValue="summer-flea-market">
+                        <SelectTrigger id="market">
+                            <SelectValue placeholder="Select a market" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="summer-flea-market">Summer Flea Market</SelectItem>
+                            <SelectItem value="winter-wonderland-market">Winter Wonderland Market</SelectItem>
+                        </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email-participant">Email</Label>
+                    <Input id="email-participant" name="email" type="email" placeholder="john.doe@example.com" required />
+                     <p className="text-xs text-muted-foreground">Hint: Use `helper@marketmate.com` for helper role.</p>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password-participant">Password</Label>
+                      <Link href="#" className="text-sm font-medium text-primary hover:underline">
+                        Forgot password?
+                      </Link>
+                    </div>
+                    <Input id="password-participant" type="password" required defaultValue="password" />
+                  </div>
+                  <Button type="submit" className="w-full">
+                    Login as Participant
+                  </Button>
+                </form>
+              </TabsContent>
+              <TabsContent value="organization">
+                <form onSubmit={handleOrganizationSubmit} className="space-y-4 pt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email-org">Admin Email</Label>
+                      <Input id="email-org" name="email" type="email" placeholder="admin@flohmarkt-berlin.de" required />
+                       <p className="text-xs text-muted-foreground">Hint: Any email works. 'berlin' in email logs into Berlin org.</p>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="password-org">Password</Label>
+                         <Link href="#" className="text-sm font-medium text-primary hover:underline">
+                            Forgot password?
+                         </Link>
+                      </div>
+                      <Input id="password-org" type="password" required defaultValue="password"/>
+                    </div>
+                    <Button type="submit" className="w-full">
+                        Login as Organization
+                    </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
               <Link href="/register" className="font-medium text-primary hover:underline">
