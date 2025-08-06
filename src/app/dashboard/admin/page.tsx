@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Download, FileCog, Store, PlusCircle, Edit, Trash2, Building, Users, Mail, Award } from "lucide-react";
+import { Download, FileCog, Store, PlusCircle, Edit, Trash2, Building, Users, Mail, Award, Settings } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,10 +21,11 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useSearchParams } from "next/navigation";
+import * as React from "react";
 
 const initialMarkets = [
-    { id: 1, name: 'Summer Flea Market', date: '2024-08-15', status: 'Active' },
-    { id: 2, name: 'Winter Wonderland Market', date: '2024-12-05', status: 'Planning' },
+    { id: 1, name: 'Summer Flea Market', date: '2024-08-15', status: 'Active', articleLimit: 50 },
+    { id: 2, name: 'Winter Wonderland Market', date: '2024-12-05', status: 'Planning', articleLimit: 75 },
 ];
 
 const orgMembers = [
@@ -36,26 +37,26 @@ export default function AdminPage() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const org = searchParams.get('org') || 'My Organization';
+  const [markets, setMarkets] = React.useState(initialMarkets);
 
-  // Quick function to format names
   const formatName = (name: string) => name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
-  const handleSaveSettings = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSaveMarketSettings = (e: React.FormEvent<HTMLFormElement>, marketId: number) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const articleLimit = formData.get("articleLimit");
-    console.log("Saving new article limit:", articleLimit);
+    const articleLimit = Number(formData.get("articleLimit"));
+    
+    setMarkets(markets.map(m => m.id === marketId ? { ...m, articleLimit } : m));
+    
     toast({
-      title: "Settings Saved",
-      description: `Article limit has been updated to ${articleLimit}.`,
+      title: "Market Settings Saved",
+      description: `Article limit for market ${marketId} has been updated to ${articleLimit}.`,
     });
   };
 
-  const handleExport = () => {
-    // Mock data for export
+  const handleExport = (marketName: string) => {
     const articles = [
       { sellerId: 101, articleId: 1, description: 'Vintage T-Shirt', price: 15.00 },
-      { sellerId: 101, articleId: 2, description: 'Handmade Pottery', price: 25.50 },
       { sellerId: 102, articleId: 1, description: 'Antique Clock', price: 120.00 },
     ];
     
@@ -66,14 +67,14 @@ export default function AdminPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "cash_register_data.csv");
+    link.setAttribute("download", `cash_register_data_${marketName.replace(/\s+/g, '_')}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
     toast({
       title: "Export Started",
-      description: "Your data export has been downloaded.",
+      description: `Data export for ${marketName} has been downloaded.`,
     });
   };
 
@@ -87,17 +88,9 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="markets">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="org-settings"><Building className="mr-2 h-4 w-4" />Organization</TabsTrigger>
           <TabsTrigger value="markets"><Store className="mr-2 h-4 w-4" />Market Management</TabsTrigger>
-          <TabsTrigger value="settings">
-            <FileCog className="mr-2 h-4 w-4" />
-            Global Settings
-          </TabsTrigger>
-          <TabsTrigger value="export">
-            <Download className="mr-2 h-4 w-4" />
-            Data Export
-          </TabsTrigger>
         </TabsList>
          <TabsContent value="org-settings">
            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -214,16 +207,44 @@ export default function AdminPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {initialMarkets.map((market) => (
+                        {markets.map((market) => (
                             <TableRow key={market.id}>
                                 <TableCell className="font-medium">{market.name}</TableCell>
                                 <TableCell>{market.date}</TableCell>
                                 <TableCell>{market.status}</TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Settings">
+                                            <Settings className="h-4 w-4" />
+                                        </Button>
+                                      </DialogTrigger>
+                                      <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Market Settings: {market.name}</DialogTitle>
+                                            <DialogDescription>Set the maximum number of articles a seller can list for this market.</DialogDescription>
+                                        </DialogHeader>
+                                        <form id={`market-settings-form-${market.id}`} onSubmit={(e) => handleSaveMarketSettings(e, market.id)} className="space-y-4">
+                                            <div>
+                                              <Label htmlFor="articleLimit">Article Limit</Label>
+                                              <Input id="articleLimit" name="articleLimit" type="number" defaultValue={market.articleLimit} min="1" />
+                                            </div>
+                                        </form>
+                                        <DialogFooter>
+                                            <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                                            <Button type="submit" form={`market-settings-form-${market.id}`}>Save Changes</Button>
+                                        </DialogFooter>
+                                      </DialogContent>
+                                    </Dialog>
+
+                                    <Button onClick={() => handleExport(market.name)} variant="ghost" size="icon" className="h-8 w-8" title="Export Data">
+                                        <Download className="h-4 w-4" />
+                                    </Button>
+
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" title="Edit Market">
                                         <Edit className="h-4 w-4" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" title="Delete Market">
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </TableCell>
@@ -231,42 +252,6 @@ export default function AdminPage() {
                         ))}
                     </TableBody>
                 </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="settings">
-          <Card>
-            <CardHeader>
-              <CardTitle>Article Limit Configuration</CardTitle>
-              <CardDescription>
-                Set the maximum number of articles a seller can list for sale at the flea market.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSaveSettings} className="flex flex-col sm:flex-row items-end gap-4">
-                <div className="w-full sm:w-auto flex-grow space-y-2">
-                  <Label htmlFor="articleLimit">Article Limit</Label>
-                  <Input id="articleLimit" name="articleLimit" type="number" defaultValue="50" min="1" />
-                </div>
-                <Button type="submit">Save Changes</Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="export">
-          <Card>
-            <CardHeader>
-              <CardTitle>Cash Register Data Export</CardTitle>
-              <CardDescription>
-                Generate and download a CSV file containing all seller and article data for the cash register system.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-start gap-4">
-                <p>Click the button below to download the complete dataset.</p>
-                <Button onClick={handleExport}>
-                    <Download className="mr-2 h-4 w-4" />
-                    Export Seller Data (CSV)
-                </Button>
             </CardContent>
           </Card>
         </TabsContent>
