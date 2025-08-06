@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Download, FileCog, Store, PlusCircle, Edit, Trash2, Building } from "lucide-react";
+import { Download, FileCog, Store, PlusCircle, Edit, Trash2, Building, Users, Mail, Award } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,11 @@ const initialMarkets = [
     { id: 1, name: 'Summer Flea Market', date: '2024-08-15', status: 'Active' },
     { id: 2, name: 'Winter Wonderland Market', date: '2024-12-05', status: 'Planning' },
 ];
+
+const orgMembers = [
+    { id: 'user-1', name: 'Admin User', email: 'admin@marketmate.com', role: 'Owner' },
+    { id: 'user-2', name: 'Jane Orga', email: 'jane.orga@marketmate.com', role: 'Admin' }
+]
 
 export default function AdminPage() {
   const { toast } = useToast();
@@ -94,23 +100,69 @@ export default function AdminPage() {
           </TabsTrigger>
         </TabsList>
          <TabsContent value="org-settings">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Organization Settings</CardTitle>
-                    <CardDescription>Manage your organization's details and subscription plan.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="orgName">Organization Name</Label>
-                        <Input id="orgName" defaultValue={formatName(org)} />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="orgContact">Contact Email</Label>
-                        <Input id="orgContact" type="email" defaultValue="contact@example.com" />
-                    </div>
-                     <Button>Save Organization Details</Button>
-                </CardContent>
-            </Card>
+           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+             <div className="lg:col-span-1 space-y-6">
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle>Organization Info</CardTitle>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                    </CardHeader>
+                    <CardContent className="space-y-4 text-sm">
+                         <div className="flex items-center gap-2 font-semibold text-base">
+                            <Building className="h-5 w-5 text-primary"/>
+                            <span>{formatName(org)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                            <Mail className="h-4 w-4"/>
+                            <span>contact@example.com</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                            <Award className="h-4 w-4"/>
+                            <span>Pro Subscription</span>
+                        </div>
+                    </CardContent>
+                </Card>
+             </div>
+             <div className="lg:col-span-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Organization Members</CardTitle>
+                        <CardDescription>Manage administrators and owners for your organization.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Email</TableHead>
+                                    <TableHead className="text-right">Role</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {orgMembers.map((member) => (
+                                    <TableRow key={member.id}>
+                                        <TableCell className="font-medium">{member.name}</TableCell>
+                                        <TableCell>{member.email}</TableCell>
+                                        <TableCell className="text-right">
+                                             <Badge variant={member.role === 'Owner' ? 'default' : 'secondary'}>
+                                                {member.role}
+                                            </Badge>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                         <div className="mt-6 flex justify-end">
+                            <Button>
+                                <PlusCircle className="mr-2 h-4 w-4" /> Add Member
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+             </div>
+           </div>
         </TabsContent>
         <TabsContent value="markets">
           <Card>
