@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Download, FileCog, Store, PlusCircle, Edit, Trash2, Building, Users, Mail, Award, Settings } from "lucide-react";
+import { Download, Store, PlusCircle, Edit, Trash2, Building, Users, Mail, Award, Settings, Eye, UsersRound, Package, DollarSign } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,10 +22,33 @@ import {
 } from "@/components/ui/dialog";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
+import { Switch } from "@/components/ui/switch";
 
 const initialMarkets = [
-    { id: 1, name: 'Summer Flea Market', date: '2024-08-15', status: 'Active', articleLimit: 50 },
-    { id: 2, name: 'Winter Wonderland Market', date: '2024-12-05', status: 'Planning', articleLimit: 75 },
+    { 
+      id: 1, 
+      name: 'Summer Flea Market', 
+      date: '2024-08-15', 
+      status: 'Active', 
+      articleLimit: 50,
+      sellerFee: 10,
+      maxSellerNumbers: 200,
+      maxSellerNumbersPerUser: 2,
+      allowHelperRegistration: true,
+      isPublic: true,
+    },
+    { 
+      id: 2, 
+      name: 'Winter Wonderland Market', 
+      date: '2024-12-05', 
+      status: 'Planning', 
+      articleLimit: 75,
+      sellerFee: 15,
+      maxSellerNumbers: 150,
+      maxSellerNumbersPerUser: 1,
+      allowHelperRegistration: false,
+      isPublic: true,
+    },
 ];
 
 const orgMembers = [
@@ -44,13 +67,21 @@ export default function AdminPage() {
   const handleSaveMarketSettings = (e: React.FormEvent<HTMLFormElement>, marketId: number) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const articleLimit = Number(formData.get("articleLimit"));
     
-    setMarkets(markets.map(m => m.id === marketId ? { ...m, articleLimit } : m));
+    const updatedMarket = {
+        articleLimit: Number(formData.get("articleLimit")),
+        sellerFee: Number(formData.get("sellerFee")),
+        maxSellerNumbers: Number(formData.get("maxSellerNumbers")),
+        maxSellerNumbersPerUser: Number(formData.get("maxSellerNumbersPerUser")),
+        allowHelperRegistration: formData.get("allowHelperRegistration") === "on",
+        isPublic: formData.get("isPublic") === "on",
+    };
+    
+    setMarkets(markets.map(m => m.id === marketId ? { ...m, ...updatedMarket } : m));
     
     toast({
       title: "Market Settings Saved",
-      description: `Article limit for market ${marketId} has been updated to ${articleLimit}.`,
+      description: `Settings for market ${marketId} have been updated.`,
     });
   };
 
@@ -219,15 +250,44 @@ export default function AdminPage() {
                                             <Settings className="h-4 w-4" />
                                         </Button>
                                       </DialogTrigger>
-                                      <DialogContent>
+                                      <DialogContent className="sm:max-w-[480px]">
                                         <DialogHeader>
                                             <DialogTitle>Market Settings: {market.name}</DialogTitle>
-                                            <DialogDescription>Set the maximum number of articles a seller can list for this market.</DialogDescription>
+                                            <DialogDescription>Manage all settings and limits for this specific market.</DialogDescription>
                                         </DialogHeader>
-                                        <form id={`market-settings-form-${market.id}`} onSubmit={(e) => handleSaveMarketSettings(e, market.id)} className="space-y-4">
-                                            <div>
-                                              <Label htmlFor="articleLimit">Article Limit</Label>
+                                        <form id={`market-settings-form-${market.id}`} onSubmit={(e) => handleSaveMarketSettings(e, market.id)} className="grid grid-cols-2 gap-x-6 gap-y-4 pt-4">
+                                            <div className="space-y-2">
+                                              <Label htmlFor="articleLimit" className="flex items-center"><Package className="mr-2 h-4 w-4"/>Articles per Seller Number</Label>
                                               <Input id="articleLimit" name="articleLimit" type="number" defaultValue={market.articleLimit} min="1" />
+                                            </div>
+                                            <div className="space-y-2">
+                                              <Label htmlFor="sellerFee" className="flex items-center"><DollarSign className="mr-2 h-4 w-4"/>Fee per Seller Number (€)</Label>
+                                              <Input id="sellerFee" name="sellerFee" type="number" defaultValue={market.sellerFee} min="0" step="0.5" />
+                                            </div>
+                                            <div className="space-y-2">
+                                              <Label htmlFor="maxSellerNumbers" className="flex items-center"><Store className="mr-2 h-4 w-4"/>Max Seller Numbers (Market)</Label>
+                                              <Input id="maxSellerNumbers" name="maxSellerNumbers" type="number" defaultValue={market.maxSellerNumbers} min="1" />
+                                            </div>
+                                             <div className="space-y-2">
+                                              <Label htmlFor="maxSellerNumbersPerUser" className="flex items-center"><Users className="mr-2 h-4 w-4"/>Max Seller Numbers (User)</Label>
+                                              <Input id="maxSellerNumbersPerUser" name="maxSellerNumbersPerUser" type="number" defaultValue={market.maxSellerNumbersPerUser} min="1" />
+                                            </div>
+
+                                            <div className="col-span-2 border-t pt-4 flex flex-col gap-4">
+                                                <div className="flex items-center justify-between space-x-2">
+                                                    <Label htmlFor={`allowHelperRegistration-${market.id}`} className="flex items-center font-normal">
+                                                        <UsersRound className="mr-2 h-4 w-4 text-muted-foreground"/>
+                                                        <span>Allow Helper Registration</span>
+                                                    </Label>
+                                                    <Switch id={`allowHelperRegistration-${market.id}`} name="allowHelperRegistration" defaultChecked={market.allowHelperRegistration} />
+                                                </div>
+                                                <div className="flex items-center justify-between space-x-2">
+                                                    <Label htmlFor={`isPublic-${market.id}`} className="flex items-center font-normal">
+                                                        <Eye className="mr-2 h-4 w-4 text-muted-foreground"/>
+                                                        <span>Make Market Publicly Visible</span>
+                                                    </Label>
+                                                    <Switch id={`isPublic-${market.id}`} name="isPublic" defaultChecked={market.isPublic} />
+                                                </div>
                                             </div>
                                         </form>
                                         <DialogFooter>
