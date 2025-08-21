@@ -11,7 +11,7 @@ export default function ForOrganizationsPage() {
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         <Logo />
         <Button asChild variant="ghost">
-          <Link href="/login">
+          <Link href="/login/organization">
             Login
             <LogIn className="ml-2 h-4 w-4" />
           </Link>
@@ -39,7 +39,7 @@ export default function ForOrganizationsPage() {
                   </Link>
                 </Button>
                 <Button asChild size="lg" variant="outline">
-                  <Link href="/login">
+                  <Link href="/login/organization">
                     Zum Organisations-Login
                   </Link>
                 </Button>
@@ -64,4 +64,3 @@ export default function ForOrganizationsPage() {
     </div>
   );
 }
-

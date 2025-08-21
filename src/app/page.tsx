@@ -10,12 +10,19 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900/50">
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         <Logo />
-        <Button asChild variant="ghost">
-          <Link href="/login">
-            Login
-            <LogIn className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+            <Button asChild variant="ghost">
+              <Link href="/login/participant">
+                Participant Login
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/login/organization">
+                Organization Login
+                <LogIn className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+        </div>
       </header>
       <main className="flex-grow flex items-center">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
