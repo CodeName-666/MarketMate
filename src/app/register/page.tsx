@@ -33,7 +33,7 @@ export default function RegisterPage() {
     router.push(`/dashboard?${queryParams.toString()}`);
   };
 
-  const handleOrganizationSubmit = (e: React.FormEvent<HTMLFormFormElement>) => {
+  const handleOrganizationSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const newOrganizationName = formData.get('newOrganizationName') as string;
