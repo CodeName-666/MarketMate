@@ -23,24 +23,14 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BarChart, ListOrdered, History, PlusCircle, Printer, Edit, Trash2, Gift, ShieldCheck } from 'lucide-react';
-
-interface Article {
-  id: number;
-  description: string;
-  price: number;
-}
-
-const initialArticles: Article[] = [
-  { id: 1, description: "Vintage Denim Jacket", price: 45.00 },
-  { id: 2, description: "Hand-painted Ceramic Mug", price: 18.50 },
-  { id: 3, description: "Leather Bound Journal", price: 22.00 },
-];
+import type { Article } from '@/lib/types';
+import { getArticles } from '@/lib/data';
 
 const SELLER_NUMBER = 123;
 const ARTICLE_LIMIT = 50;
 
 export default function DashboardPage() {
-  const [articles, setArticles] = React.useState<Article[]>(initialArticles);
+  const [articles, setArticles] = React.useState<Article[]>([]);
   const [isDialogOpen, setDialogOpen] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -48,6 +38,18 @@ export default function DashboardPage() {
   const role = searchParams.get('role') || 'seller';
   const market = searchParams.get('market') || 'Summer Flea Market';
   const org = searchParams.get('org') || 'Flohmarkt-Verein Berlin';
+  
+  React.useEffect(() => {
+    // Fetch articles on component mount
+    const fetchArticles = async () => {
+        const articlesData = await getArticles(SELLER_NUMBER);
+        setArticles(articlesData);
+    };
+    if (role === 'seller') {
+      fetchArticles();
+    }
+  }, [role]);
+
 
   // Quick function to format names
   const formatName = (name: string) => name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());

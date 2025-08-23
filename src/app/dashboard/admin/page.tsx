@@ -23,44 +23,29 @@ import {
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { Switch } from "@/components/ui/switch";
+import type { Market, OrgMember } from "@/lib/types";
+import { getMarkets, getOrgMembers } from "@/lib/data";
 
-const initialMarkets = [
-    { 
-      id: 1, 
-      name: 'Summer Flea Market', 
-      date: '2024-08-15', 
-      status: 'Active', 
-      articleLimit: 50,
-      sellerFee: 10,
-      maxSellerNumbers: 200,
-      maxSellerNumbersPerUser: 2,
-      allowHelperRegistration: true,
-      isPublic: true,
-    },
-    { 
-      id: 2, 
-      name: 'Winter Wonderland Market', 
-      date: '2024-12-05', 
-      status: 'Planning', 
-      articleLimit: 75,
-      sellerFee: 15,
-      maxSellerNumbers: 150,
-      maxSellerNumbersPerUser: 1,
-      allowHelperRegistration: false,
-      isPublic: true,
-    },
-];
-
-const orgMembers = [
-    { id: 'user-1', name: 'Admin User', email: 'admin@marketmate.com', role: 'Owner' },
-    { id: 'user-2', name: 'Jane Orga', email: 'jane.orga@marketmate.com', role: 'Admin' }
-]
 
 export default function AdminPage() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const org = searchParams.get('org') || 'My Organization';
-  const [markets, setMarkets] = React.useState(initialMarkets);
+  const [markets, setMarkets] = React.useState<Market[]>([]);
+  const [orgMembers, setOrgMembers] = React.useState<OrgMember[]>([]);
+
+  React.useEffect(() => {
+    // Fetch data on component mount
+    const fetchData = async () => {
+        const marketsData = await getMarkets();
+        setMarkets(marketsData);
+
+        const orgMembersData = await getOrgMembers(org);
+        setOrgMembers(orgMembersData);
+    };
+    fetchData();
+  }, [org]);
+
 
   const formatName = (name: string) => name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
