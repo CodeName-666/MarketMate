@@ -77,7 +77,8 @@ export default function AdminPage() {
     ];
     
     const headers = "sellerId,articleId,description,price";
-    const csvRows = articles.map(row => `${row.sellerId},"${row.description}",${row.price}`);
+    const formatter = new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, useGrouping: false });
+    const csvRows = articles.map(row => `${row.sellerId},${row.articleId},"${row.description}",${formatter.format(row.price)}`);
     const csvContent = "data:text/csv;charset=utf-8," + [headers, ...csvRows].join("\n");
     
     const encodedUri = encodeURI(csvContent);
