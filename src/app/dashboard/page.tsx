@@ -42,13 +42,21 @@ export default function DashboardPage() {
   React.useEffect(() => {
     // Fetch articles on component mount
     const fetchArticles = async () => {
+      try {
         const articlesData = await getArticles(SELLER_NUMBER);
         setArticles(articlesData);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load articles.",
+        });
+      }
     };
     if (role === 'seller') {
       fetchArticles();
     }
-  }, [role]);
+  }, [role, toast]);
 
 
   // Quick function to format names
@@ -65,12 +73,21 @@ export default function DashboardPage() {
         return;
     }
     const formData = new FormData(e.currentTarget);
+    const price = Number(formData.get('price'));
+    if (!Number.isFinite(price)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Price",
+        description: "Please enter a valid price.",
+      });
+      return;
+    }
     const newArticle: Article = {
       id: Math.max(0, ...articles.map(a => a.id)) + 1,
       description: formData.get('description') as string,
-      price: parseFloat(formData.get('price') as string),
+      price,
     };
-    setArticles([...articles, newArticle]);
+    setArticles(prev => [...prev, newArticle]);
     toast({
       title: "Article Added",
       description: `"${newArticle.description}" has been added to your list.`,
