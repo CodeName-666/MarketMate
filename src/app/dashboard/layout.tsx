@@ -49,7 +49,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (org) params.set('org', org);
     if (market) params.set('market', market);
     if (role) params.set('role', role);
-    return `${path}?${params.toString()}`;
+    const query = params.toString();
+    return query ? `${path}?${query}` : path;
   }
 
   return (
