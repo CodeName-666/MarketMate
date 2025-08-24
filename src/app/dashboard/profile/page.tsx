@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -22,15 +22,13 @@ const marketHistory = [
     { id: 4, name: 'Autumn Harvest Festival', date: '2022-10-28', status: 'Closed', role: 'Seller' },
 ];
 
-const getStatusVariant = (status: string) => {
-    switch (status.toLowerCase()) {
-        case 'running':
-            return 'default';
-        case 'closed':
-            return 'secondary';
-        default:
-            return 'outline';
-    }
+const statusVariantMap: Record<string, BadgeProps["variant"]> = {
+    running: "default",
+    closed: "secondary",
+};
+
+const getStatusVariant = (status: string): BadgeProps["variant"] => {
+    return statusVariantMap[status.toLowerCase()] ?? "outline";
 };
 
 export default function ProfilePage() {
@@ -101,7 +99,7 @@ export default function ProfilePage() {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                 <Badge variant={getStatusVariant(market.status) as any}>
+                                                 <Badge variant={getStatusVariant(market.status)}>
                                                     {market.status}
                                                 </Badge>
                                             </TableCell>
