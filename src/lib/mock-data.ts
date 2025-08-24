@@ -35,7 +35,7 @@ const initialMarkets: Market[] = [
 const orgMembers: OrgMember[] = [
     { id: 'user-1', name: 'Admin User', email: 'admin@marketmate.com', role: 'Owner' },
     { id: 'user-2', name: 'Jane Orga', email: 'jane.orga@marketmate.com', role: 'Admin' }
-]
+];
 
 const initialArticles: Article[] = [
   { id: 1, description: "Vintage Denim Jacket", price: 45.00 },
