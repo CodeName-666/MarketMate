@@ -7,9 +7,8 @@
 import { getMockArticles, getMockMarkets, getMockOrgMembers } from './mock-data';
 import type { Article, Market, OrgMember } from './types';
 
-// This is our feature flag. Set to `true` to use local mock data.
-// In a real application, this would be an environment variable like `process.env.USE_MOCK_DATA === 'true'`.
-const USE_MOCK_DATA = true;
+// This is our feature flag. Set the `USE_MOCK_DATA` environment variable to 'true' to use local mock data.
+const USE_MOCK_DATA = process.env.USE_MOCK_DATA === 'true';
 
 export async function getMarkets(): Promise<Market[]> {
   if (USE_MOCK_DATA) {
