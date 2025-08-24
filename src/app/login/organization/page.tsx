@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -8,63 +7,113 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/logo";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { log } from "@/lib/logger";
+import { getOrganizationForEmail } from "@/lib/auth";
+import { useState } from "react";
+
+const formSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+type OrgForm = z.infer<typeof formSchema>;
 
 export default function OrganizationLoginPage() {
   const router = useRouter();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleOrganizationSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-     
-    // For org login, we assume they are an admin of that org.
-    // The org context would be derived from the user's credentials in a real app.
-    const organization = email.toLowerCase().includes('berlin') ? 'flohmarkt-verein-berlin' : 'stadt-hamburg-events';
-    
-    console.log("Organization admin login submitted for email:", email);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<OrgForm>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "password",
+    },
+  });
 
+  const onSubmit = async (data: OrgForm) => {
+    setSubmitError(null);
+    const organization = await getOrganizationForEmail(data.email);
+    if (!organization) {
+      setSubmitError("No organization associated with this email.");
+      return;
+    }
+    log("Organization admin login submitted for email:", data.email);
     const queryParams = new URLSearchParams({
-        org: organization,
-        role: 'admin',
+      org: organization,
+      role: "admin",
     });
-
     router.push(`/dashboard/admin?${queryParams.toString()}`);
-  }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="flex justify-center">
-            <Logo />
+          <Logo />
         </div>
         <Card>
           <CardHeader className="text-center">
             <CardTitle>Organization Login</CardTitle>
-            <CardDescription>Log in to manage your organization and markets.</CardDescription>
+            <CardDescription>
+              Log in to manage your organization and markets.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleOrganizationSubmit} className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email-org">Admin Email</Label>
-                  <Input id="email-org" name="email" type="email" placeholder="admin@flohmarkt-berlin.de" required />
-                   <p className="text-xs text-muted-foreground">Hint: Any email works. 'berlin' in email logs into Berlin org.</p>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="email-org">Admin Email</Label>
+                <Input
+                  id="email-org"
+                  type="email"
+                  placeholder="admin@flohmarkt-berlin.de"
+                  {...register("email")}
+                />
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Hint: Any email works. Specific addresses map to orgs.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password-org">Password</Label>
+                  <Link
+                    href="#"
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password-org">Password</Label>
-                     <Link href="#" className="text-sm font-medium text-primary hover:underline">
-                        Forgot password?
-                     </Link>
-                  </div>
-                  <Input id="password-org" type="password" required defaultValue="password"/>
-                </div>
-                <Button type="submit" className="w-full">
-                    Login
-                </Button>
+                <Input
+                  id="password-org"
+                  type="password"
+                  {...register("password")}
+                />
+                {errors.password && (
+                  <p className="text-sm text-red-500">{errors.password.message}</p>
+                )}
+              </div>
+              {submitError && (
+                <p className="text-sm text-red-500">{submitError}</p>
+              )}
+              <Button type="submit" className="w-full">
+                Login
+              </Button>
             </form>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an organization account?{" "}
-              <Link href="/register" className="font-medium text-primary hover:underline">
+              <Link
+                href="/register"
+                className="font-medium text-primary hover:underline"
+              >
                 Create one
               </Link>
             </div>
